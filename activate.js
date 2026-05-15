@@ -10,22 +10,22 @@ async function getCID() {
         return;
     }
 
-    // URL Mobile de secours (utilisée par les outils pro quand GoInteract est instable)
-    const url = "https://mobile.sls.microsoft.com/sls/ws/ActivationService.asmx";
+    // ON UTILISE L'IP DIRECTE (Trouvée via serveurs non-censurés)
+    // L'IP 20.112.250.133 appartient à Microsoft Azure / SLS
+    const directIpUrl = "https://20.112.250.133/sls/ws/ActivationService.asmx";
     
-    console.log("🚀 Tentative d'activation via Mobile SLS...");
+    console.log("🚀 Connexion forcée via IP directe (20.112.250.133)...");
 
     const xml = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><BatchActivate xmlns="http://www.microsoft.com/DRM/SL/BatchActivation/1.0"><request><Digest>None</Digest><RequestXml>&lt;ActivationRequest xmlns="http://www.microsoft.com/DRM/SL/BatchActivation/1.0"&gt;&lt;VersionNumber&gt;3.2&lt;/VersionNumber&gt;&lt;RequestType&gt;2&lt;/RequestType&gt;&lt;Info&gt;&lt;IID&gt;${iid}&lt;/IID&gt;&lt;/Info&gt;&lt;/ActivationRequest&gt;</RequestXml></request></BatchActivate></soap:Body></soap:Envelope>`;
 
     try {
-        const response = await axios.post(url, xml, {
+        const response = await axios.post(directIpUrl, xml, {
             httpsAgent: agent,
             headers: {
+                'Host': 'mobile.sls.microsoft.com', // TRÈS IMPORTANT : On dit au serveur qu'on veut parler à mobile.sls
                 'Content-Type': 'text/xml; charset=utf-8',
                 'SOAPAction': '"http://www.microsoft.com/DRM/SL/BatchActivation/1.0/BatchActivate"',
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
-                'Accept': '*/*',
-                'Cache-Control': 'no-cache'
+                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1'
             }
         });
 
@@ -36,18 +36,15 @@ async function getCID() {
             console.log("🎯 CONFIRMATION ID (CID) : " + match[1]);
             console.log("========================================\n");
         } else {
-            console.log("❌ Microsoft a répondu mais n'a pas généré de CID.");
-            // Analyse de la réponse pour aider Khalid
-            if (response.data.includes("0x8004C017")) console.log("Raison : IID invalide (Clé bloquée)");
-            else if (response.data.includes("Exceeded")) console.log("Raison : Nombre d'activations dépassé.");
-            else console.log("Détail technique : " + response.data.substring(0, 500));
+            console.log("❌ Réponse reçue, mais pas de CID.");
+            console.log("Détail : " + response.data.substring(0, 300));
         }
 
     } catch (error) {
-        console.log("❌ Erreur de connexion : " + error.message);
-        if (error.response) {
-            console.log("Status : " + error.response.status);
-            console.log("Data : " + error.response.data);
+        if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+            console.log("❌ Microsoft bloque l'IP de GitHub au niveau du pare-feu.");
+        } else {
+            console.log("❌ Erreur : " + error.message);
         }
     }
 }
