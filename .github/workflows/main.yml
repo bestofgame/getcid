@@ -1,0 +1,24 @@
+name: GetCID_Engine
+on:
+  workflow_dispatch:
+    inputs:
+      iid:
+        description: 'Collez votre IID ici'
+        required: true
+
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install Dependencies
+        run: npm install axios
+        
+      - name: Run Engine
+        run: node activate.js "${{ github.event.inputs.iid }}"
