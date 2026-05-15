@@ -1,8 +1,9 @@
 const axios = require('axios');
 const https = require('https');
+// On importe différemment pour éviter l'erreur d'export
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
-// Ta liste de proxys Webshare 
+// Ta liste de proxys Webshare
 const proxyList = [
     "http://tmmpphzg:koq8hgnhmbls@142.111.48.253:7030",
     "http://tmmpphzg:koq8hgnhmbls@23.95.150.145:6114",
@@ -23,18 +24,21 @@ async function runActivation() {
         return;
     }
 
-    // Sélection aléatoire d'un proxy 
+    // Sélection aléatoire
     const randomProxy = proxyList[Math.floor(Math.random() * proxyList.length)];
+    
+    // Création de l'agent
     const proxyAgent = new HttpsProxyAgent(randomProxy);
 
-    console.log(`🚀 Tentative avec le proxy : ${randomProxy.split('@')[1]}`);
+    console.log(`🚀 Tentative via Proxy : ${randomProxy.split('@')[1]}`);
 
     const url = "https://mobile.sls.microsoft.com/sls/ws/ActivationService.asmx";
     const xml = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><BatchActivate xmlns="http://www.microsoft.com/DRM/SL/BatchActivation/1.0"><request><Digest>None</Digest><RequestXml>&lt;ActivationRequest xmlns="http://www.microsoft.com/DRM/SL/BatchActivation/1.0"&gt;&lt;VersionNumber&gt;3.2&lt;/VersionNumber&gt;&lt;RequestType&gt;2&lt;/RequestType&gt;&lt;Info&gt;&lt;IID&gt;${iid}&lt;/IID&gt;&lt;/Info&gt;&lt;/ActivationRequest&gt;</RequestXml></request></BatchActivate></soap:Body></soap:Envelope>`;
 
     try {
         const response = await axios.post(url, xml, {
-            httpsAgent: proxyAgent, // On passe par le proxy ici
+            httpsAgent: proxyAgent,
+            proxy: false, // Important pour forcer l'usage de httpsAgent avec Axios
             headers: {
                 'Content-Type': 'text/xml; charset=utf-8',
                 'SOAPAction': '"http://www.microsoft.com/DRM/SL/BatchActivation/1.0/BatchActivate"',
@@ -43,18 +47,14 @@ async function runActivation() {
         });
 
         const match = response.data.match(/&lt;CID&gt;(\d+)&lt;\/CID&gt;/);
-        
         if (match) {
-            console.log("\n========================================");
-            console.log("🎯 CONFIRMATION ID (CID) : " + match[1]);
-            console.log("========================================\n");
+            console.log("\n✅ CID TROUVÉ : " + match[1]);
         } else {
-            console.log("❌ Microsoft a répondu mais pas de CID.");
-            console.log("Détail : " + response.data.substring(0, 300));
+            console.log("\n❌ Pas de CID dans la réponse.");
+            console.log("Extrait : " + response.data.substring(0, 200));
         }
-
     } catch (error) {
-        console.log("❌ Erreur via Proxy : " + error.message);
+        console.error("❌ Erreur Proxy/Réseau : " + error.message);
     }
 }
 
