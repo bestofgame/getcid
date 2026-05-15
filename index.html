@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MS Activation Expert - Pro Edition</title>
+    <title>MS Activation Expert - GitHub Edition</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -11,28 +11,22 @@
 
     <style>
         :root { --primary: #0078d4; --bg: #f3f2f1; --dark-card: #1a1c1e; }
-        body { background: var(--bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
-        .card-expert { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 30px; border: none; max-width: 650px; margin: auto; }
-        .drop-zone { border: 2px dashed var(--primary); border-radius: 12px; padding: 40px; cursor: pointer; background: #f0f7ff; transition: all 0.3s ease; text-align: center; display: block; }
-        .drop-zone:hover { background: #e1efff; border-color: #005a9e; }
-        .iid-input { font-size: 1.2rem; letter-spacing: 2px; font-weight: 700; text-align: center; border: 2px solid #dee2e6; }
-        .cid-box { background: var(--dark-card); color: #39FF14; font-family: 'Courier New', Courier, monospace; font-size: 1.4rem; text-align: center; border-radius: 8px; border: none; }
-        .grid-cid input { text-align: center; font-weight: bold; font-size: 0.95rem; background: #f8f9fa; }
-        #ocr-status { font-weight: 600; min-height: 24px; }
-        .loader { display: none; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-expert { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 30px; max-width: 650px; margin: auto; }
+        .drop-zone { border: 2px dashed var(--primary); border-radius: 12px; padding: 40px; cursor: pointer; background: #f0f7ff; text-align: center; display: block; }
+        .iid-input { font-size: 1.2rem; letter-spacing: 2px; font-weight: 700; text-align: center; }
+        .info-panel { background: #e7f3ff; border-left: 5px solid var(--primary); padding: 15px; border-radius: 4px; margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card-expert">
-        <h3 class="text-center fw-bold text-primary mb-4">Support Activation Expert</h3>
+        <h3 class="text-center fw-bold text-primary mb-4">Support Activation GitHub</h3>
         
         <div class="mb-4">
             <label for="img-up" class="drop-zone">
                 <span class="fs-5 d-block mb-2">📸 Charger l'image de l'étape 2</span>
-                <span class="text-muted small">Capture d'écran Office uniquement</span>
                 <input type="file" id="img-up" accept="image/*" style="display:none">
             </label>
             <div id="ocr-status" class="mt-3 text-center small text-secondary">En attente d'image...</div>
@@ -41,35 +35,24 @@
         <hr class="my-4">
 
         <div class="mb-3">
-            <label class="fw-bold small mb-1 text-uppercase text-muted">Installation ID (IID) :</label>
+            <label class="fw-bold small mb-1 text-uppercase text-muted">Installation ID (IID) extrait :</label>
             <div class="input-group mb-2">
-                <input type="text" id="tbxIID" class="form-control iid-input" placeholder="000000-000000..." maxlength="71">
-                <button type="button" id="btnGetCID" class="btn btn-primary px-4 fw-bold">OBTENIR CID</button>
-            </div>
-            <div class="d-flex justify-content-between px-1">
-                <span class="small text-muted">Format: 9 blocs de chiffres</span>
-                <span class="small fw-bold"><span id="cnt">0</span> / 63</span>
+                <input type="text" id="tbxIID" class="form-control iid-input" placeholder="000000-000000...">
+                <button type="button" id="btnGoGitHub" class="btn btn-dark px-4 fw-bold">🚀 LANCER L'ENGINE</button>
             </div>
         </div>
 
-        <div class="mt-5">
-            <label class="fw-bold small mb-1 text-uppercase text-muted">Confirmation ID (CID) :</label>
-            <input type="text" id="tbxCid" class="form-control cid-box mb-3" placeholder="RÉSULTAT ICI" readonly>
-            
-            <div class="row g-2 grid-cid">
-                <div class="col-3"><input type="text" id="cidA" class="form-control" placeholder="A" readonly></div>
-                <div class="col-3"><input type="text" id="cidB" class="form-control" placeholder="B" readonly></div>
-                <div class="col-3"><input type="text" id="cidC" class="form-control" placeholder="C" readonly></div>
-                <div class="col-3"><input type="text" id="cidD" class="form-control" placeholder="D" readonly></div>
-                <div class="col-3"><input type="text" id="cidE" class="form-control" placeholder="E" readonly></div>
-                <div class="col-3"><input type="text" id="cidF" class="form-control" placeholder="F" readonly></div>
-                <div class="col-3"><input type="text" id="cidG" class="form-control" placeholder="G" readonly></div>
-                <div class="col-3"><input type="text" id="cidH" class="form-control" placeholder="H" readonly></div>
-            </div>
+        <div id="instructions" class="info-panel">
+            <h6 class="fw-bold text-primary">👉 Prochaine étape :</h6>
+            <ol class="small mb-0">
+                <li>L'IID a été copié dans votre presse-papier.</li>
+                <li>La page <strong>Actions</strong> de GitHub va s'ouvrir.</li>
+                <li>Cliquez sur <strong>"Run workflow"</strong>, collez l'IID et validez.</li>
+            </ol>
         </div>
     </div>
     
-    <p class="text-center mt-4 text-muted small">© 2026 Ebooxly Tech - Hébergé par GitHub, Propulsé par Namecheap API</p>
+    <p class="text-center mt-4 text-muted small">© 2026 Ebooxly Tech - Moteur sécurisé sur GitHub Actions</p>
 </div>
 
 <script>
@@ -77,60 +60,40 @@ $(document).ready(function() {
     const iidInput = $("#tbxIID");
     const status = $("#ocr-status");
 
-    // 1. FORMATAGE DYNAMIQUE IID (Identique getcid.info)
+    // 1. FORMATAGE DYNAMIQUE
     iidInput.on("input", function() {
         let t = this.value.replace(/\D/g, "");
-        $("#cnt").text(t.length);
         if(t.length == 63 || t.length == 54) {
             this.value = t.match(new RegExp(".{1," + t.length/9 + "}", "g")).join("-");
         } else { this.value = t; }
     });
 
-    // 2. LOGIQUE D'APPEL API (Connexion vers Namecheap)
-    $("#btnGetCID").on("click", async function() {
+    // 2. REDIRECTION VERS GITHUB ACTIONS
+    $("#btnGoGitHub").on("click", function() {
         const rawIID = iidInput.val().replace(/\D/g, "");
         if (rawIID.length < 54) {
-            alert("Veuillez entrer un IID valide.");
+            alert("Veuillez extraire un IID valide d'abord.");
             return;
         }
 
-        status.attr("class", "mt-3 text-center small text-primary").html("<div class='loader'></div> Connexion au moteur Namecheap...");
-
-        try {
-            // REMPLACER L'URL CI-DESSOUS PAR TON URL RÉELLE SUR NAMECHEAP
-            const response = await fetch("https://ebooxly.com/api.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ iid: rawIID })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                afficherCID(result.cid);
-                status.attr("class", "mt-3 text-center small text-success fw-bold").text("✅ CID reçu avec succès !");
-            } else {
-                status.attr("class", "mt-3 text-center small text-danger").text("❌ Erreur : " + result.message);
-            }
-        } catch (err) {
-            status.attr("class", "mt-3 text-center small text-danger").text("❌ Impossible de contacter le serveur backend.");
-        }
+        // Copie automatique de l'IID pour faciliter la vie de l'utilisateur
+        navigator.clipboard.writeText(rawIID);
+        
+        $("#instructions").fadeIn();
+        
+        // REMPLACE CETTE URL PAR TON URL GITHUB ACTIONS REELLE
+        const githubActionsUrl = "https://github.com/TON_NOM_UTILISATEUR/TON_REPO/actions/workflows/main.yml";
+        
+        setTimeout(() => {
+            window.open(githubActionsUrl, '_blank');
+        }, 2000);
     });
 
-    function afficherCID(cid) {
-        $("#tbxCid").val(cid);
-        for(let i=0; i<8; i++) {
-            let chunk = cid.substring(i*6, (i+1)*6);
-            $(`#cid${String.fromCharCode(65+i)}`).val(chunk);
-        }
-    }
-
-    // 3. OCR HAUTE PRÉCISION (Ta version optimisée)
+    // 3. OCR (Ta version optimisée qui marche bien)
     $("#img-up").on("change", function(e) {
         const file = e.target.files[0];
         if (!file) return;
-
-        status.attr("class", "mt-3 text-center small text-primary fw-bold").text("Analyse de l'image (Précision +200%)...");
+        status.text("Analyse en cours...");
 
         const reader = new FileReader();
         reader.onload = function(event) {
@@ -141,7 +104,6 @@ $(document).ready(function() {
                 canvas.width = img.width * 2; canvas.height = img.height * 2;
                 ctx.scale(2, 2);
                 ctx.drawImage(img, 0, 0);
-
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
                 for (let i = 0; i < data.length; i += 4) {
@@ -157,13 +119,11 @@ $(document).ready(function() {
                         let digitsOnly = line.replace(/\D/g, '');
                         if (digitsOnly.length >= 50) bestCandidate = digitsOnly;
                     });
-
                     if (bestCandidate.length >= 54) {
-                        let finalLen = (bestCandidate.length >= 63) ? 63 : 54;
-                        iidInput.val(bestCandidate.slice(-finalLen)).trigger('input');
-                        status.attr("class", "mt-3 text-center small text-success fw-bold").text("✅ IID extrait !");
+                        iidInput.val(bestCandidate.slice(-63)).trigger('input');
+                        status.attr("class", "text-success fw-bold").text("✅ IID prêt ! Cliquez sur le bouton noir.");
                     } else {
-                        status.attr("class", "mt-3 text-center small text-warning").text("⚠️ Qualité image insuffisante.");
+                        status.attr("class", "text-danger").text("❌ Image illisible.");
                     }
                 });
             };
@@ -173,6 +133,5 @@ $(document).ready(function() {
     });
 });
 </script>
-
 </body>
 </html>
