@@ -1,7 +1,5 @@
 const axios = require('axios');
 const https = require('https');
-// Syntaxe ultra-basique pour la version 5.x
-const HttpsProxyAgent = require('https-proxy-agent');
 
 const proxyList = [
     "http://tmmpphzg:koq8hgnhmbls@142.111.48.253:7030",
@@ -24,18 +22,27 @@ async function runActivation() {
     }
 
     const randomProxy = proxyList[Math.floor(Math.random() * proxyList.length)];
-    // On instancie l'agent
-    const agent = new HttpsProxyAgent(randomProxy);
-
     console.log(`🚀 Tentative via Proxy : ${randomProxy.split('@')[1]}`);
 
+    // Extraction des composants du proxy pour Axios
+    const proxyUrl = new URL(randomProxy);
+    
     const url = "https://mobile.sls.microsoft.com/sls/ws/ActivationService.asmx";
     const xml = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><BatchActivate xmlns="http://www.microsoft.com/DRM/SL/BatchActivation/1.0"><request><Digest>None</Digest><RequestXml>&lt;ActivationRequest xmlns="http://www.microsoft.com/DRM/SL/BatchActivation/1.0"&gt;&lt;VersionNumber&gt;3.2&lt;/VersionNumber&gt;&lt;RequestType&gt;2&lt;/RequestType&gt;&lt;Info&gt;&lt;IID&gt;${iid}&lt;/IID&gt;&lt;/Info&gt;&lt;/ActivationRequest&gt;</RequestXml></request></BatchActivate></soap:Body></soap:Envelope>`;
 
     try {
         const response = await axios.post(url, xml, {
-            httpsAgent: agent,
-            proxy: false, // Force axios à ignorer les variables d'environnement proxy
+            // Configuration native d'Axios pour les proxys
+            proxy: {
+                protocol: 'http',
+                host: proxyUrl.hostname,
+                port: proxyUrl.port,
+                auth: {
+                    username: proxyUrl.username,
+                    password: proxyUrl.password
+                }
+            },
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
             headers: {
                 'Content-Type': 'text/xml; charset=utf-8',
                 'SOAPAction': '"http://www.microsoft.com/DRM/SL/BatchActivation/1.0/BatchActivate"',
@@ -47,7 +54,7 @@ async function runActivation() {
         if (match) {
             console.log("\n✅ CID TROUVÉ : " + match[1]);
         } else {
-            console.log("\n❌ Réponse reçue sans CID. Détail : " + response.data.substring(0, 200));
+            console.log("\n❌ Pas de CID reçu. Vérifie la clé.");
         }
     } catch (error) {
         console.error("❌ Erreur : " + error.message);
