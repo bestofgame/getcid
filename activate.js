@@ -1,6 +1,6 @@
 const axios = require('axios');
 const https = require('https');
-// Importation compatible avec la version 5.x
+// Syntaxe ultra-basique pour la version 5.x
 const HttpsProxyAgent = require('https-proxy-agent');
 
 const proxyList = [
@@ -24,8 +24,8 @@ async function runActivation() {
     }
 
     const randomProxy = proxyList[Math.floor(Math.random() * proxyList.length)];
-    // Initialisation de l'agent
-    const proxyAgent = new HttpsProxyAgent(randomProxy);
+    // On instancie l'agent
+    const agent = new HttpsProxyAgent(randomProxy);
 
     console.log(`🚀 Tentative via Proxy : ${randomProxy.split('@')[1]}`);
 
@@ -34,8 +34,8 @@ async function runActivation() {
 
     try {
         const response = await axios.post(url, xml, {
-            httpsAgent: proxyAgent,
-            proxy: false, // Désactive le proxy interne d'Axios pour utiliser l'agent
+            httpsAgent: agent,
+            proxy: false, // Force axios à ignorer les variables d'environnement proxy
             headers: {
                 'Content-Type': 'text/xml; charset=utf-8',
                 'SOAPAction': '"http://www.microsoft.com/DRM/SL/BatchActivation/1.0/BatchActivate"',
@@ -45,15 +45,12 @@ async function runActivation() {
 
         const match = response.data.match(/&lt;CID&gt;(\d+)&lt;\/CID&gt;/);
         if (match) {
-            console.log("\n========================================");
-            console.log("🎯 CONFIRMATION ID (CID) : " + match[1]);
-            console.log("========================================\n");
+            console.log("\n✅ CID TROUVÉ : " + match[1]);
         } else {
-            console.log("\n❌ Microsoft a répondu mais pas de CID.");
-            console.log("Réponse : " + response.data.substring(0, 250));
+            console.log("\n❌ Réponse reçue sans CID. Détail : " + response.data.substring(0, 200));
         }
     } catch (error) {
-        console.error("❌ Erreur Proxy : " + error.message);
+        console.error("❌ Erreur : " + error.message);
     }
 }
 
