@@ -1,9 +1,9 @@
-name: GetCID_Proxy_Engine
+name: GetCID_Engine
 on:
   workflow_dispatch:
     inputs:
       iid:
-        description: 'Collez votre IID ici'
+        description: 'IID'
         required: true
 
 jobs:
@@ -11,14 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          
-      - name: Install Dependencies
-        run: npm install axios https-proxy-agent
-        
-      - name: Run Engine
+      - name: Install Axios
+        run: npm install axios
+      - name: Run
         run: node activate.js "${{ github.event.inputs.iid }}"
