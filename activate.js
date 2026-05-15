@@ -1,9 +1,8 @@
 const axios = require('axios');
 const https = require('https');
-// On importe différemment pour éviter l'erreur d'export
-const { HttpsProxyAgent } = require('https-proxy-agent');
+// Importation compatible avec la version 5.x
+const HttpsProxyAgent = require('https-proxy-agent');
 
-// Ta liste de proxys Webshare
 const proxyList = [
     "http://tmmpphzg:koq8hgnhmbls@142.111.48.253:7030",
     "http://tmmpphzg:koq8hgnhmbls@23.95.150.145:6114",
@@ -24,10 +23,8 @@ async function runActivation() {
         return;
     }
 
-    // Sélection aléatoire
     const randomProxy = proxyList[Math.floor(Math.random() * proxyList.length)];
-    
-    // Création de l'agent
+    // Initialisation de l'agent
     const proxyAgent = new HttpsProxyAgent(randomProxy);
 
     console.log(`🚀 Tentative via Proxy : ${randomProxy.split('@')[1]}`);
@@ -38,7 +35,7 @@ async function runActivation() {
     try {
         const response = await axios.post(url, xml, {
             httpsAgent: proxyAgent,
-            proxy: false, // Important pour forcer l'usage de httpsAgent avec Axios
+            proxy: false, // Désactive le proxy interne d'Axios pour utiliser l'agent
             headers: {
                 'Content-Type': 'text/xml; charset=utf-8',
                 'SOAPAction': '"http://www.microsoft.com/DRM/SL/BatchActivation/1.0/BatchActivate"',
@@ -48,13 +45,15 @@ async function runActivation() {
 
         const match = response.data.match(/&lt;CID&gt;(\d+)&lt;\/CID&gt;/);
         if (match) {
-            console.log("\n✅ CID TROUVÉ : " + match[1]);
+            console.log("\n========================================");
+            console.log("🎯 CONFIRMATION ID (CID) : " + match[1]);
+            console.log("========================================\n");
         } else {
-            console.log("\n❌ Pas de CID dans la réponse.");
-            console.log("Extrait : " + response.data.substring(0, 200));
+            console.log("\n❌ Microsoft a répondu mais pas de CID.");
+            console.log("Réponse : " + response.data.substring(0, 250));
         }
     } catch (error) {
-        console.error("❌ Erreur Proxy/Réseau : " + error.message);
+        console.error("❌ Erreur Proxy : " + error.message);
     }
 }
 
