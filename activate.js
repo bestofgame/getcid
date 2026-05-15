@@ -1,4 +1,5 @@
 const axios = require('axios');
+const https = require('https');
 
 // Simulation de l'API : prend l'IID en argument
 async function runActivation() {
@@ -26,13 +27,16 @@ async function runActivation() {
 
     try {
         const response = await axios.post(url, xml, {
-            headers: {
-                'Content-Type': 'text/xml; charset=utf-8',
-                'SOAPAction': '"http://www.microsoft.com/DRM/SL/BatchActivation/1.0/BatchActivate"',
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'
-            }
-        });
-
+    headers: {
+        'Content-Type': 'text/xml; charset=utf-8',
+        'SOAPAction': '"http://www.microsoft.com/DRM/SL/BatchActivation/1.0/BatchActivate"',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'
+    },
+    // FORCE la connexion même si le certificat est "inconnu"
+    httpsAgent: new https.Agent({  
+        rejectUnauthorized: false 
+    })
+});
         // Recherche du CID dans la réponse
         const match = response.data.match(/&lt;CID&gt;(\d+)&lt;\/CID&gt;/);
         
