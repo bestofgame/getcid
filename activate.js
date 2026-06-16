@@ -54,7 +54,28 @@ async function runActivation() {
         if (match) {
             console.log("\n✅ CID TROUVÉ : " + match[1]);
         } else {
-            console.log("\n❌ Pas de CID reçu. Vérifie la clé.");
+            // --- NOUVEAU : Analyse intelligente de l'erreur Microsoft ---
+            console.log("\n❌ Microsoft a refusé de générer le CID.");
+
+            // Recherche des codes d'erreur dans le XML renvoyé
+            const errCodeMatch = response.data.match(/&lt;ErrorCode&gt;(0x[0-9A-Fa-f]+)&lt;\/ErrorCode&gt;/i) || response.data.match(/<faultcode>(.*?)<\/faultcode>/i);
+            const errDescMatch = response.data.match(/&lt;Description&gt;(.*?)&lt;\/Description&gt;/i) || response.data.match(/<faultstring>(.*?)<\/faultstring>/i);
+
+            if (errCodeMatch) {
+                // Nettoyage au cas où des balises HTML/XML subsistent
+                const code = errCodeMatch[1].replace(/(<([^>]+)>)/gi, "").toUpperCase();
+                console.log("Code d'erreur : " + code);
+
+                if (code === '0XC004C008' || code === '0XC004C020') {
+                    console.log("Diagnostic  : La clé est bloquée ou sa limite d'activation est atteinte (Exceeded/Blocked).");
+                } else if (errDescMatch) {
+                    const desc = errDescMatch[1].replace(/(<([^>]+)>)/gi, "");
+                    console.log("Raison      : " + desc);
+                }
+            } else {
+                // Si le format d'erreur est inconnu, on affiche un bout de la réponse brute pour déboguer
+                console.log("Détail brut : " + response.data.substring(0, 200).replace(/\n/g, ' '));
+            }
         }
     } catch (error) {
         console.error("❌ Erreur : " + error.message);
