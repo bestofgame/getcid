@@ -105,23 +105,21 @@ $(document).ready(function() {
                     $(`#cid${String.fromCharCode(65+i)}`).val(chunk);
                 }
                 status.attr("class", "mt-3 text-center small text-success fw-bold").text("✅ CID reçu !");
-            } else {
-                // --- NOUVEAU : Analyse du XML renvoyé par le Worker ---
-                const errCodeMatch = xmlText.match(/&lt;ErrorCode&gt;(0x[0-9A-Fa-f]+)&lt;\/ErrorCode&gt;/i) || xmlText.match(/<faultcode>(.*?)<\/faultcode>/i);
-                const errDescMatch = xmlText.match(/&lt;Description&gt;(.*?)&lt;\/Description&gt;/i) || xmlText.match(/<faultstring>(.*?)<\/faultstring>/i);
-
-                let errorMsg = "❌ Microsoft a refusé l'IID.";
+           } else {
+                // TEST DE DIAGNOSTIC : On affiche exactement ce que le Worker Cloudflare renvoie
+                console.log("RÉPONSE BRUTE DU WORKER :", xmlText); 
                 
-                if (errCodeMatch) {
-                    let code = errCodeMatch[1].replace(/(<([^>]+)>)/gi, "").toUpperCase();
-                    if (code === '0XC004C008' || code === '0XC004C020') {
-                        errorMsg = `❌ <b>Refusé (Code : ${code})</b><br>La clé est bloquée ou a atteint sa limite d'activation.`;
-                    } else {
-                        let desc = errDescMatch ? errDescMatch[1].replace(/(<([^>]+)>)/gi, "") : "Pas de détail.";
-                        errorMsg = `❌ <b>Refusé (Code : ${code})</b><br>${desc}`;
-                    }
-                }
-                status.attr("class", "mt-3 text-center small text-danger").html(errorMsg);
+                // On sécurise le texte brut pour l'afficher à l'écran sans casser la page
+                let texteBrut = xmlText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                // On coupe à 300 caractères pour ne pas inonder l'écran
+                let texteAffiche = texteBrut.substring(0, 300); 
+
+                status.attr("class", "mt-3 text-center small text-danger").html(
+                    `❌ <b>Le Worker n'a pas renvoyé de CID.</b><br>
+                     <span style="font-size: 11px; color: #666; word-wrap: break-word; display: block; margin-top: 5px; background: #eee; padding: 5px; border-radius: 4px;">
+                     <b>Réponse brute du serveur :</b><br>${texteAffiche}...
+                     </span>`
+                );
             }
         } catch (err) {
             status.attr("class", "mt-3 text-center small text-danger").text("❌ Erreur de connexion au Worker Cloudflare.");
