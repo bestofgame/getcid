@@ -77,7 +77,7 @@ $(document).ready(function() {
         } else { this.value = t; }
     });
 
-    // 2. APPEL DIRECT AU WORKER CLOUDFLARE
+    // 2. APPEL DIRECT AU WORKER CLOUDFLARE AVEC GESTION D'ERREUR INTELLIGENTE
     $("#btnGetCID").on("click", async function() {
         const rawIID = iidInput.val().replace(/\D/g, "");
         if (rawIID.length < 54) {
@@ -106,14 +106,29 @@ $(document).ready(function() {
                 }
                 status.attr("class", "mt-3 text-center small text-success fw-bold").text("✅ CID reçu !");
             } else {
-                status.attr("class", "mt-3 text-center small text-danger").text("❌ Microsoft a refusé l'IID.");
+                // --- NOUVEAU : Analyse du XML renvoyé par le Worker ---
+                const errCodeMatch = xmlText.match(/&lt;ErrorCode&gt;(0x[0-9A-Fa-f]+)&lt;\/ErrorCode&gt;/i) || xmlText.match(/<faultcode>(.*?)<\/faultcode>/i);
+                const errDescMatch = xmlText.match(/&lt;Description&gt;(.*?)&lt;\/Description&gt;/i) || xmlText.match(/<faultstring>(.*?)<\/faultstring>/i);
+
+                let errorMsg = "❌ Microsoft a refusé l'IID.";
+                
+                if (errCodeMatch) {
+                    let code = errCodeMatch[1].replace(/(<([^>]+)>)/gi, "").toUpperCase();
+                    if (code === '0XC004C008' || code === '0XC004C020') {
+                        errorMsg = `❌ <b>Refusé (Code : ${code})</b><br>La clé est bloquée ou a atteint sa limite d'activation.`;
+                    } else {
+                        let desc = errDescMatch ? errDescMatch[1].replace(/(<([^>]+)>)/gi, "") : "Pas de détail.";
+                        errorMsg = `❌ <b>Refusé (Code : ${code})</b><br>${desc}`;
+                    }
+                }
+                status.attr("class", "mt-3 text-center small text-danger").html(errorMsg);
             }
         } catch (err) {
-            status.attr("class", "mt-3 text-center small text-danger").text("❌ Erreur de connexion au Worker.");
+            status.attr("class", "mt-3 text-center small text-danger").text("❌ Erreur de connexion au Worker Cloudflare.");
         }
     });
 
-    // 3. OCR (Ta version optimisée)
+    // 3. OCR
     $("#img-up").on("change", function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -143,9 +158,9 @@ $(document).ready(function() {
                     });
                     if (bestCandidate.length >= 54) {
                         iidInput.val(bestCandidate.slice(-63)).trigger('input');
-                        status.attr("class", "text-success fw-bold").text("✅ IID extrait !");
+                        status.attr("class", "text-success fw-bold mt-2").text("✅ IID extrait ! Cliquez sur Obtenir CID.");
                     } else {
-                        status.attr("class", "text-danger").text("❌ Image illisible.");
+                        status.attr("class", "text-danger mt-2").text("❌ Image illisible.");
                     }
                 });
             };
